@@ -1,0 +1,1 @@
+- [dev-797a2b](dev-797a2b.md) — Scaffolded mark-et Node.js project with markdown parser, static site builder, CLI, templates, example content, and 13 passing tests
