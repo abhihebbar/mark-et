@@ -1,8 +1,10 @@
 const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const { parseFrontmatter, renderMarkdown } = require('../src/markdown');
 const { buildSite } = require('../src/build');
+const { initWorkspace, CHANNELS, CHANNEL_STAGES, BASE_FILES } = require('../src/init');
 
 let passed = 0;
 let failed = 0;
@@ -111,6 +113,71 @@ test('buildSite: generates HTML from content dir', () => {
   const html = fs.readFileSync(indexFile, 'utf8');
   assert.ok(html.includes('<h1'), 'index.html should contain an h1');
   assert.ok(html.includes('mark-et'), 'index.html should contain project name');
+});
+
+// --- Init ---
+
+test('initWorkspace: creates agents.md and CLAUDE.md', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'mark-et-test-'));
+  try {
+    const result = initWorkspace(tmp);
+    assert.strictEqual(result.alreadyInitialised, false);
+    assert.ok(fs.existsSync(path.join(tmp, 'agents.md')));
+    assert.ok(fs.existsSync(path.join(tmp, 'CLAUDE.md')));
+    const claude = fs.readFileSync(path.join(tmp, 'CLAUDE.md'), 'utf8');
+    assert.ok(claude.includes('agents.md'), 'CLAUDE.md should reference agents.md');
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('initWorkspace: creates base/ files', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'mark-et-test-'));
+  try {
+    initWorkspace(tmp);
+    for (const name of BASE_FILES) {
+      assert.ok(fs.existsSync(path.join(tmp, 'base', `${name}.md`)), `base/${name}.md should exist`);
+    }
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('initWorkspace: creates content-ideas/ directory', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'mark-et-test-'));
+  try {
+    initWorkspace(tmp);
+    assert.ok(fs.existsSync(path.join(tmp, 'content-ideas')));
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('initWorkspace: creates channel directories with stages', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'mark-et-test-'));
+  try {
+    initWorkspace(tmp);
+    for (const channel of CHANNELS) {
+      for (const stage of CHANNEL_STAGES) {
+        const dir = path.join(tmp, 'channels', channel, stage);
+        assert.ok(fs.existsSync(dir), `channels/${channel}/${stage}/ should exist`);
+      }
+    }
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('initWorkspace: skips if already initialised', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'mark-et-test-'));
+  try {
+    initWorkspace(tmp);
+    const result = initWorkspace(tmp);
+    assert.strictEqual(result.alreadyInitialised, true);
+    assert.strictEqual(result.created.length, 0);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
 });
 
 // --- Summary ---
