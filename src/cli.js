@@ -2,6 +2,7 @@
 
 const path = require('path');
 const { buildSite } = require('./build');
+const { initWorkspace } = require('./init');
 
 const args = process.argv.slice(2);
 const command = args[0] || 'build';
@@ -82,11 +83,26 @@ switch (command) {
     break;
   }
 
+  case 'init': {
+    const target = flags.dir || '.';
+    const result = initWorkspace(target);
+    if (result.alreadyInitialised) {
+      console.log(`Already initialised (agents.md exists in ${result.dir})`);
+    } else {
+      console.log(`Initialised mark-et workspace in ${result.dir}`);
+      for (const f of result.created) {
+        console.log(`  ${f}`);
+      }
+    }
+    break;
+  }
+
   case 'help':
   default:
     console.log(`mark-et — Markdown-native marketing platform
 
 Commands:
+  init    Initialise a new mark-et workspace (creates agents.md, base/, channels/, etc.)
   build   Build markdown content into static HTML pages
   dev     Start dev server with file watching
   help    Show this help message
@@ -96,5 +112,6 @@ Options:
   --templates <dir>  Templates directory (default: templates)
   --out <dir>        Output directory (default: dist)
   --port <number>    Dev server port (default: 3000)
+  --dir <dir>        Target directory for init (default: .)
 `);
 }
