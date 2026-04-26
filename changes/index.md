@@ -1,2 +1,3 @@
 - [dev-797a2b](dev-797a2b.md) — Scaffolded mark-et Node.js project with markdown parser, static site builder, CLI, templates, example content, and 13 passing tests
 - [dev-37b1ea](dev-37b1ea.md) — Added `init` command that scaffolds the mark-et workspace directory structure
+- [req-analysis-6eb526](req-analysis-6eb526.md) — Refined DEV-0045: clarified "kanban board ppt" into content page + presentation template task
